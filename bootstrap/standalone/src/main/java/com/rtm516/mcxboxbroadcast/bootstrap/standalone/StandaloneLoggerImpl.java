@@ -92,15 +92,15 @@ public class StandaloneLoggerImpl extends SimpleTerminalConsole implements Logge
                     StandaloneMain.sessionManager.dumpSession();
                 }
                 case "dumpactivity" -> {
-                    if (args.length != 1 || !args[0].matches("\\d+")) {
-                        warn("Usage: dumpactivity <xuid>");
+                    if (args.length != 1 || args[0].isBlank()) {
+                        warn("Usage: dumpactivity <xuid|gamertag>");
                         return;
                     }
 
-                    String xuid = args[0];
-                    info("Dumping active Minecraft session for XUID " + xuid);
+                    String user = args[0];
+                    info("Dumping active Minecraft session for Xbox user " + user);
                     StandaloneMain.sessionManager.scheduledThread().execute(() ->
-                        ActivityDumper.dump(StandaloneMain.sessionManager, this, Path.of("./cache"), xuid)
+                        ActivityDumper.dump(StandaloneMain.sessionManager, this, Path.of("./cache"), user)
                     );
                 }
                 case "accounts" -> {
@@ -124,7 +124,7 @@ public class StandaloneLoggerImpl extends SimpleTerminalConsole implements Logge
                     info("exit - Exit the application");
                     info("restart - Restart the application");
                     info("dumpsession - Dump the current session to json files");
-                    info("dumpactivity <xuid> - Dump another Xbox user's active Minecraft session");
+                    info("dumpactivity <xuid|gamertag> - Dump another Xbox user's active Minecraft session");
                     info("accounts list - List sub-accounts");
                     info("accounts add <sub-session-id> - Add a sub-account");
                     info("accounts remove <sub-session-id> - Remove a sub-account");
