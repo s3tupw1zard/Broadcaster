@@ -29,15 +29,15 @@ public class MCXboxBroadcastActivityDumpExtension extends MCXboxBroadcastExtensi
                     return;
                 }
 
-                if (args.length != 1 || !args[0].matches("\\d+")) {
-                    source.sendMessage("Usage: dumpactivity <xuid>");
+                if (args.length != 1 || args[0].isBlank()) {
+                    source.sendMessage("Usage: dumpactivity <xuid|gamertag>");
                     return;
                 }
 
-                String xuid = args[0];
-                logger.info("Dumping active Minecraft session for XUID " + xuid);
+                String user = args[0];
+                logger.info("Dumping active Minecraft session for Xbox user " + user);
                 sessionManager.scheduledThread().execute(() ->
-                    ActivityDumper.dump(sessionManager, logger, dataFolder(), xuid)
+                    ActivityDumper.dump(sessionManager, logger, dataFolder(), user)
                 );
             })
             .build());
