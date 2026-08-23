@@ -1,11 +1,13 @@
 package com.rtm516.mcxboxbroadcast.bootstrap.standalone;
 
+import com.rtm516.mcxboxbroadcast.core.ActivityDumper;
 import com.rtm516.mcxboxbroadcast.core.BuildData;
 import com.rtm516.mcxboxbroadcast.core.Logger;
 import net.minecrell.terminalconsole.SimpleTerminalConsole;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 
+import java.nio.file.Path;
 import java.util.Arrays;
 
 public class StandaloneLoggerImpl extends SimpleTerminalConsole implements Logger {
@@ -70,8 +72,13 @@ public class StandaloneLoggerImpl extends SimpleTerminalConsole implements Logge
 
     @Override
     protected void runCommand(String command) {
-        String[] parts = command.split(" ");
+        String[] parts = command.trim().split("\\s+");
         int offset = parts[0].equalsIgnoreCase("mcxboxbroadcast") ? 1 : 0;
+
+        if (offset >= parts.length) {
+            warn("Missing command. Type 'help' for available commands.");
+            return;
+        }
 
         String commandNode = parts[offset].toLowerCase();
         String[] args = Arrays.copyOfRange(parts, offset + 1, parts.length);
@@ -83,6 +90,18 @@ public class StandaloneLoggerImpl extends SimpleTerminalConsole implements Logge
                 case "dumpsession" -> {
                     info("Dumping session responses to 'lastSessionResponse.json' and 'currentSessionResponse.json'");
                     StandaloneMain.sessionManager.dumpSession();
+                }
+                case "dumpactivity" -> {
+                    if (args.length != 1 || args[0].isBlank()) {
+                        warn("Usage: dumpactivity <xuid|gamertag>");
+                        return;
+                    }
+
+                    String user = args[0];
+                    info("Dumping active Minecraft session for Xbox user " + user);
+                    StandaloneMain.sessionManager.scheduledThread().execute(() ->
+                        ActivityDumper.dump(StandaloneMain.sessionManager, this, Path.of("./cache"), user)
+                    );
                 }
                 case "accounts" -> {
                     if (args.length == 0) {
@@ -105,6 +124,7 @@ public class StandaloneLoggerImpl extends SimpleTerminalConsole implements Logge
                     info("exit - Exit the application");
                     info("restart - Restart the application");
                     info("dumpsession - Dump the current session to json files");
+                    info("dumpactivity <xuid|gamertag> - Dump another Xbox user's active Minecraft session");
                     info("accounts list - List sub-accounts");
                     info("accounts add <sub-session-id> - Add a sub-account");
                     info("accounts remove <sub-session-id> - Remove a sub-account");
